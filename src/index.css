@@ -1,0 +1,190 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:      #0d0b14;
+  --bg2:     #110e1c;
+  --card:    #161222;
+  --border:  rgba(196,168,255,0.1);
+  --border2: rgba(196,168,255,0.25);
+  --accent:  #c4a8ff;
+  --accent2: #d8c4ff;
+  --success: #b8a9f0;
+  --warn:    #f0c4e8;
+  --danger:  #ff8fab;
+  --purple:  #a78bfa;
+  --text:    #ede8ff;
+  --muted:   #cac3d9;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.mopas {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Grid background */
+.mopas::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(196,168,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196,168,255,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Scanlines */
+.mopas::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+}
+
+/* ── Typography ── */
+.font-mono    { font-family: 'IBM Plex Mono', monospace !important; }
+.font-display { font-family: 'Space Grotesk', sans-serif !important; font-weight: 700; }
+
+/* ── Animations ── */
+@keyframes float     { 0%,100% { transform: translateY(0);      } 50% { transform: translateY(-5px);   } }
+@keyframes pulse-out { 0%      { transform: scale(1); opacity: .8; } 100% { transform: scale(2.8); opacity: 0; } }
+@keyframes fadeInUp  { from    { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn    { from    { opacity: 0; } to { opacity: 1; } }
+@keyframes spin      { to      { transform: rotate(360deg); } }
+
+.fade-in-up { animation: fadeInUp 0.25s ease both; }
+.fade-in    { animation: fadeIn   0.2s  ease both; }
+
+/* ── Live dot ── */
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent2); position: relative; display: inline-block; flex-shrink: 0;
+}
+.live-dot::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--accent2); animation: pulse-out 1.6s ease-out infinite;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0;
+  z-index: 50; overflow: hidden; position: relative;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Nav button ── */
+.nav-btn {
+  width: 100%; background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  border-radius: 7px; transition: all 0.18s;
+  border-left: 2px solid transparent;
+  color: var(--muted); font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden;
+}
+.nav-btn:hover  { background: rgba(196,168,255,0.07); border-left-color: rgba(196,168,255,0.35); color: var(--text); }
+.nav-btn.active { background: linear-gradient(90deg, rgba(196,168,255,0.14), rgba(167,139,250,0.05)); border-left-color: var(--accent); color: #fff; }
+
+/* ── Stat card ── */
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 22px; position: relative;
+  overflow: hidden; transition: border-color 0.3s;
+}
+.stat-card:hover { border-color: var(--border2); }
+
+/* ── Threat row ── */
+.threat-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 22px; border-bottom: 1px solid rgba(196,168,255,0.07);
+  transition: background 0.15s; cursor: default;
+}
+.threat-row:hover      { background: rgba(196,168,255,0.04); }
+.threat-row:last-child { border-bottom: none; }
+
+/* ── Badge ── */
+.badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  padding: 2px 7px; border-radius: 3px; letter-spacing: 1px; border: 1px solid; flex-shrink: 0;
+}
+
+/* ── Header chip ── */
+.header-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px; border-radius: 4px; border: 1px solid;
+}
+
+/* ── Collapse button ── */
+.collapse-btn {
+  background: rgba(196,168,255,0.07); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  width: 32px; height: 32px; color: var(--muted); transition: all 0.2s; flex-shrink: 0;
+}
+.collapse-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Main scroll area ── */
+.main-scroll {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+  position: relative; z-index: 1; min-width: 0;
+}
+.main-scroll::-webkit-scrollbar       { width: 3px; }
+.main-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+/* ── Placeholder panel ── */
+.placeholder-panel {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 420px; gap: 20px;
+  background: linear-gradient(135deg, rgba(196,168,255,0.05), transparent);
+  border: 1px solid var(--border); border-radius: 12px;
+}
+
+/* ── Footer link ── */
+.footer-link {
+  background: none; border: none; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--muted); letter-spacing: 1px; transition: color 0.2s; padding: 0;
+}
+.footer-link:hover { color: var(--accent); }
+
+/* ── Input field ── */
+.input-field {
+  width: 100%; background: rgba(196,168,255,0.06);
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 12px 16px; color: var(--text);
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+  outline: none; transition: border-color 0.2s;
+}
+.input-field:focus       { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,168,255,0.1); }
+.input-field::placeholder { color: var(--muted); }
+
+/* ── Scan button ── */
+.scan-btn {
+  background: linear-gradient(135deg, #9b7fe8, #c4a8ff); border: none;
+  border-radius: 7px; padding: 12px 28px; color: #1a1530;
+  font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(196,168,255,0.2); white-space: nowrap; flex-shrink: 0;
+}
+.scan-btn:hover    { box-shadow: 0 0 32px rgba(196,168,255,0.38); transform: translateY(-1px); }
+.scan-btn:active   { transform: translateY(0); }
+.scan-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── Spinner ── */
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(196,168,255,0.15);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.7s linear infinite; flex-shrink: 0;
+}
+
+/* ── Chevron icon ── */
+.chevron-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+}

@@ -1,0 +1,5 @@
+{
+  "name": "MOPAS - Multi-Modal Phishing Analysis System",
+  "description": "An advanced AI-powered platform for detecting phishing threats across URLs, emails, images, and QR codes.",
+  "requestFramePermissions": ["camera"]
+}
