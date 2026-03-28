@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Search, ShieldAlert, CheckCircle2, AlertTriangle, Info, Cpu, Activity } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, AlertTriangle, Info, Cpu, Activity, X } from 'lucide-react';
 import { analyzeUrl } from '../services/geminiService';
 import { analyzeHeuristics } from '../services/heuristicService';
+import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -10,10 +11,20 @@ export default function UrlAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [heuristicResult, setHeuristicResult] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async (e) => {
     e.preventDefault();
     if (!url) return;
+    setError(null);
+
+    if (!canSearch()) {
+      const waitMs = getMsUntilNextSearch();
+      const minutes = Math.ceil(waitMs / 60000);
+      setError(`Rate limit reached. Please try again in ${minutes} minutes.`);
+      return;
+    }
+
     setLoading(true);
     try {
       const [aiRes, hRes] = await Promise.all([
@@ -22,8 +33,10 @@ export default function UrlAnalyzer() {
       ]);
       setResult(aiRes);
       setHeuristicResult(hRes);
+      recordSearch();
     } catch (error) {
       console.error(error);
+      setError("Analysis failed. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -50,13 +63,22 @@ export default function UrlAnalyzer() {
           <Search size={18} color="var(--accent)" />
           Hybrid URL Threat Analysis
         </h2>
+
+        {error && (
+          <div style={{ background: 'rgba(255,143,171,0.1)', border: '1px solid var(--danger)', borderRadius: 8, padding: '12px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <AlertTriangle size={16} color="var(--danger)" />
+            <span className="font-mono" style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</span>
+          </div>
+        )}
+
         <form onSubmit={handleAnalyze} style={{ display: 'flex', gap: 12 }}>
           <input
             type="text"
             placeholder="Enter URL to scan (e.g., https://secure-login.com)"
             className="input-field"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => { setUrl(e.target.value); setError(null); }}
+            style={{ resize: 'vertical' }}
           />
           <button type="submit" disabled={loading} className="scan-btn">
             {loading ? <div className="spinner" /> : 'ANALYZE'}
@@ -112,6 +134,14 @@ export default function UrlAnalyzer() {
                   </p>
                   <RiskMeter score={result.riskScore} level={result.threatLevel} />
                 </div>
+                <button
+                  onClick={() => { setResult(null); setHeuristicResult(null); setError(null); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--muted)', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1, transition: 'color 0.2s', padding: 0 }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--muted)'}
+                >
+                  <X size={14} /> CLEAR & SCAN AGAIN
+                </button>
                 <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 22, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
                   <p className="font-display" style={{ fontSize: 10, color: 'var(--warn)', letterSpacing: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Activity size={12} /> HEURISTIC SCAN

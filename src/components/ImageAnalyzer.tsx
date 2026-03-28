@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Image as ImageIcon, ShieldAlert, CheckCircle2, AlertTriangle, Info, Upload, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { analyzeImage, AnalysisResult } from '../services/geminiService';
+import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -9,6 +10,7 @@ export default function ImageAnalyzer() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -17,6 +19,7 @@ export default function ImageAnalyzer() {
       reader.onload = () => {
         setImage(reader.result as string);
         setResult(null);
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -30,12 +33,23 @@ export default function ImageAnalyzer() {
 
   const handleAnalyze = async () => {
     if (!image) return;
+    setError(null);
+
+    if (!canSearch()) {
+      const waitMs = getMsUntilNextSearch();
+      const minutes = Math.ceil(waitMs / 60000);
+      setError(`Rate limit reached. Please try again in ${minutes} minutes.`);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await analyzeImage(image);
       setResult(res);
+      recordSearch();
     } catch (error) {
       console.error(error);
+      setError("Analysis failed. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -50,6 +64,13 @@ export default function ImageAnalyzer() {
           <ImageIcon size={18} color="var(--purple)" />
           Visual Threat Analysis
         </h2>
+
+        {error && (
+          <div style={{ background: 'rgba(255,143,171,0.1)', border: '1px solid var(--danger)', borderRadius: 8, padding: '12px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <AlertTriangle size={16} color="var(--danger)" />
+            <span className="font-mono" style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</span>
+          </div>
+        )}
 
         {!image ? (
           /* ── Dropzone ── */

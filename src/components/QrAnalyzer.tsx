@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { QrCode, ShieldAlert, CheckCircle2, AlertTriangle, Info, Camera, Upload, X } from 'lucide-react';
 import jsQR from 'jsqr';
 import { analyzeUrl, AnalysisResult } from '../services/geminiService';
+import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -9,6 +10,7 @@ export default function QrAnalyzer() {
   const [decodedUrl, setDecodedUrl] = useState<string | null>(null);
   const [loading, setLoading]       = useState(false);
   const [result, setResult]         = useState<AnalysisResult | null>(null);
+  const [error, setError]           = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef  = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -77,12 +79,23 @@ export default function QrAnalyzer() {
 
   const handleAnalyze = async () => {
     if (!decodedUrl) return;
+    setError(null);
+
+    if (!canSearch()) {
+      const waitMs = getMsUntilNextSearch();
+      const minutes = Math.ceil(waitMs / 60000);
+      setError(`Rate limit reached. Please try again in ${minutes} minutes.`);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await analyzeUrl(decodedUrl);
       setResult(res);
+      recordSearch();
     } catch (error) {
       console.error(error);
+      setError("Analysis failed. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -101,6 +114,13 @@ export default function QrAnalyzer() {
           <QrCode size={18} color="var(--danger)" />
           QR Code Analysis
         </h2>
+
+        {error && (
+          <div style={{ background: 'rgba(255,143,171,0.1)', border: '1px solid var(--danger)', borderRadius: 8, padding: '12px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <AlertTriangle size={16} color="var(--danger)" />
+            <span className="font-mono" style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</span>
+          </div>
+        )}
 
         {/* ── Option tiles ── */}
         {!decodedUrl && !showCamera && (
@@ -159,7 +179,7 @@ export default function QrAnalyzer() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button
-                onClick={() => setDecodedUrl(null)}
+                onClick={() => { setDecodedUrl(null); setError(null); setResult(null); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--muted)', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1, transition: 'color 0.2s', padding: 0 }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text)'}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--muted)'}

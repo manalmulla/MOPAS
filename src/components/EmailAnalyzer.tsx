@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, ShieldAlert, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { Mail, ShieldAlert, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 import { analyzeEmail, AnalysisResult } from '../services/geminiService';
+import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -8,16 +9,28 @@ export default function EmailAnalyzer() {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content) return;
+    setError(null);
+
+    if (!canSearch()) {
+      const waitMs = getMsUntilNextSearch();
+      const minutes = Math.ceil(waitMs / 60000);
+      setError(`Rate limit reached. Please try again in ${minutes} minutes.`);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await analyzeEmail(content);
       setResult(res);
+      recordSearch();
     } catch (error) {
       console.error(error);
+      setError("Analysis failed. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -32,13 +45,21 @@ export default function EmailAnalyzer() {
           <Mail size={18} color="var(--warn)" />
           Email Content Analysis
         </h2>
+
+        {error && (
+          <div style={{ background: 'rgba(255,143,171,0.1)', border: '1px solid var(--danger)', borderRadius: 8, padding: '12px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <AlertTriangle size={16} color="var(--danger)" />
+            <span className="font-mono" style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</span>
+          </div>
+        )}
+
         <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <textarea
             className="input-field"
             rows={6}
             placeholder="Paste the email content here (including headers if possible)..."
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => { setContent(e.target.value); setError(null); }}
             style={{ resize: 'vertical' }}
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
