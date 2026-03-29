@@ -3,6 +3,7 @@ import { Search, ShieldAlert, CheckCircle2, AlertTriangle, Info, Cpu, Activity, 
 import { analyzeUrl } from '../services/geminiService';
 import { analyzeHeuristics } from '../services/heuristicService';
 import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
+import { trackDetection } from '../services/analyticsService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -34,6 +35,17 @@ export default function UrlAnalyzer() {
       setResult(aiRes);
       setHeuristicResult(hRes);
       recordSearch();
+
+      // Log threat to dashboard/database
+      const avgScore = Math.round((aiRes.riskScore + hRes.score) / 2);
+      trackDetection({
+        type: "URL",
+        target: url,
+        risk_score: avgScore,
+        threat_level: aiRes.threatLevel as any,
+        is_malicious: avgScore >= 60,
+        summary: aiRes.summary
+      }).catch(console.error);
     } catch (error) {
       console.error(error);
       setError("Analysis failed. Please check your connection.");

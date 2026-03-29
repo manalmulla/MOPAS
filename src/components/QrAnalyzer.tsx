@@ -3,6 +3,7 @@ import { QrCode, ShieldAlert, CheckCircle2, AlertTriangle, Info, Camera, Upload,
 import jsQR from 'jsqr';
 import { analyzeUrl, AnalysisResult } from '../services/geminiService';
 import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
+import { trackDetection } from '../services/analyticsService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -93,6 +94,16 @@ export default function QrAnalyzer() {
       const res = await analyzeUrl(decodedUrl);
       setResult(res);
       recordSearch();
+
+      // Log threat to dashboard/database
+      trackDetection({
+        type: "QR",
+        target: decodedUrl,
+        risk_score: res.riskScore,
+        threat_level: res.threatLevel as any,
+        is_malicious: res.riskScore >= 60,
+        summary: res.summary
+      }).catch(console.error);
     } catch (error) {
       console.error(error);
       setError("Analysis failed. Please check your connection.");

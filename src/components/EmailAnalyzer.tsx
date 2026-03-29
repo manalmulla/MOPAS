@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, ShieldAlert, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 import { analyzeEmail, AnalysisResult } from '../services/geminiService';
 import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
+import { trackDetection } from '../services/analyticsService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -28,6 +29,16 @@ export default function EmailAnalyzer() {
       const res = await analyzeEmail(content);
       setResult(res);
       recordSearch();
+
+      // Log threat to dashboard/database
+      trackDetection({
+        type: "EMAIL",
+        target: content.length > 50 ? content.substring(0, 47) + "..." : content,
+        risk_score: res.riskScore,
+        threat_level: res.threatLevel as any,
+        is_malicious: res.riskScore >= 60,
+        summary: res.summary
+      }).catch(console.error);
     } catch (error) {
       console.error(error);
       setError("Analysis failed. Please check your connection.");

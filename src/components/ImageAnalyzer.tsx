@@ -3,6 +3,7 @@ import { Image as ImageIcon, ShieldAlert, CheckCircle2, AlertTriangle, Info, Upl
 import { useDropzone } from 'react-dropzone';
 import { analyzeImage, AnalysisResult } from '../services/geminiService';
 import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
+import { trackDetection } from '../services/analyticsService';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -47,6 +48,16 @@ export default function ImageAnalyzer() {
       const res = await analyzeImage(image);
       setResult(res);
       recordSearch();
+
+      // Log threat to dashboard/database
+      trackDetection({
+        type: "IMAGE",
+        target: "Image Analysis Result",
+        risk_score: res.riskScore,
+        threat_level: res.threatLevel as any,
+        is_malicious: res.riskScore >= 60,
+        summary: res.summary
+      }).catch(console.error);
     } catch (error) {
       console.error(error);
       setError("Analysis failed. Please check your connection.");
