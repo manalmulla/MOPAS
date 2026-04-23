@@ -88,3 +88,16 @@ export async function analyzeImage(base64Image: string): Promise<AnalysisResult>
   });
   return JSON.parse(response.text || "{}");
 }
+
+export async function analyzeDocument(text: string): Promise<AnalysisResult> {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: `Analyze the following text extracted from a document (like a PDF invoice or Word doc) for phishing indicators, malicious requests, urgency triggers, or suspicious links: \n\n${text}`,
+    config: {
+      systemInstruction: "You are a cybersecurity document analyst. Identify indicators of fraud, invoice manipulation, business email compromise (BEC), and malicious links within documents.",
+      responseMimeType: "application/json",
+      responseSchema: analysisSchema
+    }
+  });
+  return JSON.parse(response.text || "{}");
+}

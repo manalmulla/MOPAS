@@ -3,16 +3,23 @@ import { supabase } from "../lib/supabase";
 export interface Detection {
   id?: string;
   created_at?: string;
-  type: "URL" | "EMAIL" | "IMAGE" | "QR";
+  type: "URL" | "EMAIL" | "IMAGE" | "QR" | "DOC";
   target: string;
   risk_score: number;
   threat_level: "Low" | "Medium" | "High" | "Critical";
   is_malicious: boolean;
   summary: string;
+  user_id?: string;
 }
 
 export const trackDetection = async (detection: Detection) => {
   try {
+    // Check for authenticated user to attach user_id
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      detection.user_id = session.user.id;
+    }
+
     // 1. Try Supabase
     const { error } = await supabase.from("detections").insert([detection]);
 
@@ -106,4 +113,64 @@ export const subscribeToDetections = (onNewDetection: (payload: any) => void) =>
   }, 1000);
 
   return { unsubscribe: () => { remoteSub.unsubscribe(); clearInterval(interval); } };
+};
+
+export const getHistoricalTrends = async () => {
+  try {
+    // Fetch last 100 detections to generate a trend over recent time
+    const { data, error } = await supabase
+      .from("detections")
+      .select("created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error || !data) return [];
+
+    // Group by day (YYYY-MM-DD)
+    const countsByDate: Record<string, number> = {};
+    const today = new Date();
+    
+    // Initialize last 7 days with 0
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      countsByDate[dateStr] = 0;
+    }
+
+    data.forEach(item => {
+      const dateStr = new Date(item.created_at).toISOString().split('T')[0];
+      if (countsByDate[dateStr] !== undefined) {
+        countsByDate[dateStr]++;
+      }
+    });
+
+    return Object.entries(countsByDate).map(([date, count]) => {
+      // format date to e.g. "Apr 23"
+      const [, month, day] = new Date(date).toDateString().split(' ');
+      return { name: `${month} ${day}`, threats: count };
+    });
+  } catch (err) {
+    console.error("Error fetching historical trends:", err);
+    return [];
+  }
+};
+
+export const getUserHistory = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from("detections")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching user history:", error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching user history:", err);
+    return [];
+  }
 };

@@ -125,3 +125,32 @@ export function analyzeHeuristics(urlStr: string): HeuristicResult {
     features
   };
 }
+
+export function getFeatureArray(f: HeuristicFeatures): number[] {
+  return [
+    f.url_length,
+    f.hostname_length,
+    f.path_length,
+    f.num_dots,
+    f.num_hyphens,
+    f.num_underscores,
+    f.num_slashes,
+    f.num_at,
+    f.num_question,
+    f.num_equals,
+    f.num_ampersand,
+    f.num_percent,
+    f.num_digits_url,
+    f.digit_ratio,
+    f.special_char_ratio,
+    f.url_entropy,
+    f.hostname_entropy,
+    f.num_subdomains,
+    f.has_ip ? 1 : 0,
+    f.has_https ? 1 : 0,
+    f.has_shortener ? 1 : 0,
+    f.has_suspicious_words ? 1 : 0,
+    f.path_depth,
+    f.query_length
+  ];
+}

@@ -4,6 +4,7 @@ import jsQR from 'jsqr';
 import { analyzeUrl, AnalysisResult } from '../services/geminiService';
 import { canSearch, recordSearch, getMsUntilNextSearch } from '../services/rateLimitService';
 import { trackDetection } from '../services/analyticsService';
+import { exportToPdf } from '../utils/exportPdf';
 import RiskMeter from './RiskMeter';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -82,8 +83,8 @@ export default function QrAnalyzer() {
     if (!decodedUrl) return;
     setError(null);
 
-    if (!canSearch()) {
-      const waitMs = getMsUntilNextSearch();
+    if (!(await canSearch())) {
+      const waitMs = await getMsUntilNextSearch();
       const minutes = Math.ceil(waitMs / 60000);
       setError(`Rate limit reached. Please try again in ${minutes} minutes.`);
       return;
@@ -93,7 +94,7 @@ export default function QrAnalyzer() {
     try {
       const res = await analyzeUrl(decodedUrl);
       setResult(res);
-      recordSearch();
+      await recordSearch();
 
       // Log threat to dashboard/database
       trackDetection({
@@ -212,14 +213,26 @@ export default function QrAnalyzer() {
       <AnimatePresence>
         {result && (
           <motion.div
+            id="qr-analyzer-result"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="auto-grid"
           >
             {/* Risk meter */}
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <RiskMeter score={result.riskScore} level={result.threatLevel} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <RiskMeter score={result.riskScore} level={result.threatLevel} />
+              </div>
+              <button
+                className="export-btn"
+                onClick={() => exportToPdf('qr-analyzer-result', `MOPAS-QR-Report-${Date.now()}.pdf`)}
+                style={{ width: '100%', background: 'rgba(184,169,240,0.1)', border: '1px solid var(--accent)', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--accent)', fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: 1, transition: 'all 0.2s', padding: '10px' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--accent)'; (e.currentTarget as HTMLElement).style.color = '#000'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(184,169,240,0.1)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent)'; }}
+              >
+                PDF EXPORT
+              </button>
             </div>
 
             {/* Details */}
