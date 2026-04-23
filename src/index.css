@@ -107,6 +107,23 @@
 .threat-row:hover      { background: rgba(196,168,255,0.04); }
 .threat-row:last-child { border-bottom: none; }
 
+/* ── Container for horizontal scroll ── */
+.threat-feed-container {
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: none;
+}
+.threat-feed-container::-webkit-scrollbar { display: none; }
+
+.threat-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 600px; /* Ensure table structure on mobile */
+  padding: 11px 22px;
+  border-bottom: 1px solid rgba(196,168,255,0.07);
+}
+
 /* ── Badge ── */
 .badge {
   font-family: 'IBM Plex Mono', monospace; font-size: 9px;
@@ -182,6 +199,131 @@
   border-top-color: var(--accent); border-radius: 50%;
   animation: spin 0.7s linear infinite; flex-shrink: 0;
 }
+
+.nav-label.collapsed { display: none; }
+
+/* ── Responsive Utils ── */
+.res-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.res-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.auto-grid  { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.res-flex-cols { display: flex; gap: 20px; }
+
+@media (max-width: 1200px) {
+  .res-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+.mobile-only-header { display: none; }
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 768px) {
+  .mopas { flex-direction: column !important; height: 100vh; overflow: hidden; position: relative; }
+  
+  .mobile-only-header { 
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; background: rgba(5,10,18,0.9); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border); padding: 0 20px; z-index: 60;
+  }
+  .hamburger-btn { 
+    background: none; border: none; display: flex; align-items: center; cursor: pointer; padding: 0;
+  }
+
+  .sidebar-backdrop { 
+    display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(4px); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .sidebar { 
+    width: 280px !important; 
+    height: 100vh !important; 
+    flex-direction: column !important;
+    position: fixed !important;
+    left: -280px !important;
+    top: 0 !important;
+    z-index: 101 !important;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: #0d0a16 !important;
+    box-shadow: 20px 0 60px rgba(0,0,0,0.5);
+    border-right: 1px solid var(--border);
+  }
+  .sidebar.mobile-open { left: 0 !important; }
+
+  .sidebar nav { width: 100%; }
+  .sidebar .nav-btn { width: 100% !important; height: auto !important; padding: 12px 16px !important; justify-content: flex-start !important; }
+  .sidebar .nav-btn span { display: block !important; font-size: 13px !important; }
+  .sidebar .nav-label.collapsed { display: block !important; }
+  .sidebar .sidebar-logo { display: flex !important; }
+  .sidebar .sidebar-logo p { display: block !important; }
+  .sidebar .font-mono { display: block !important; }
+  .sidebar .collapse-btn { display: none !important; }
+
+  .res-grid-4, .res-grid-2, .res-flex-cols { grid-template-columns: 1fr !important; flex-direction: column; }
+  .main-scroll { height: calc(100vh - 60px); flex: 1; overflow-y: auto; }
+}
+
+@media (max-width: 480px) {
+  .sidebar { width: 260px !important; left: -260px !important; }
+}
+
+/* ── Auth Styles ── */
+.auth-container {
+  min-height: 100vh; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); position: relative; overflow: hidden;
+}
+.auth-glow {
+  position: absolute; width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%);
+  filter: blur(80px); z-index: 1; pointer-events: none;
+}
+.auth-box {
+  background: rgba(22,18,34,0.7); backdrop-filter: blur(20px);
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 42px; width: 400px; z-index: 2;
+  box-shadow: 0 12px 64px rgba(0,0,0,0.5);
+}
+.auth-logo {
+  width: 64px; height: 64px; background: rgba(167,139,250,0.1);
+  border: 1px solid var(--border); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+}
+.auth-input-group {
+  position: relative; width: 100%;
+}
+.auth-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none;
+}
+.auth-input {
+  width: 100%; padding: 14px 14px 14px 44px;
+  background: rgba(167,139,250,0.05); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; outline: none; transition: all 0.2s;
+}
+.auth-input:focus { border-color: var(--accent); background: rgba(167,139,250,0.1); }
+.auth-alert { padding: 12px; border-radius: 6px; margin: 8px 0; overflow: hidden; }
+.auth-alert.error { background: rgba(255,143,171,0.1); border: 1px solid var(--danger); color: var(--danger); }
+.auth-alert.success { background: rgba(184,169,240,0.1); border: 1px solid var(--success); color: var(--success); }
+.auth-btn {
+  background: linear-gradient(135deg, #9b7fe8, #d8c4ff); border: none;
+  border-radius: 8px; padding: 14px; color: #1a1530;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(167,139,250,0.2);
+}
+.auth-btn:hover { box-shadow: 0 0 32px rgba(167,139,250,0.4); transform: translateY(-1px); }
+.auth-toggle {
+  background: none; border: none; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 1px; cursor: pointer; transition: color 0.15s;
+}
+.auth-toggle:hover { color: var(--accent); }
+.github-auth-btn {
+  width: 100%; padding: 12px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); display: flex; align-items: center; justify-content: center; gap: 10px;
+  cursor: pointer; transition: all 0.2s; margin-top: 20px;
+}
+.github-auth-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
 
 /* ── Chevron icon ── */
 .chevron-icon {

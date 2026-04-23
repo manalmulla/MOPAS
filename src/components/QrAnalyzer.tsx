@@ -135,7 +135,7 @@ export default function QrAnalyzer() {
 
         {/* ── Option tiles ── */}
         {!decodedUrl && !showCamera && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
             {/* Camera */}
             <button
               onClick={startCamera}
@@ -215,7 +215,7 @@ export default function QrAnalyzer() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}
+            className="auto-grid"
           >
             {/* Risk meter */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

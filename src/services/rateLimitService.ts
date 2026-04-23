@@ -4,7 +4,7 @@ interface SearchHistory {
 
 const STORAGE_KEY = 'mopas_search_history';
 const LIMIT = 5;
-const WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
+const WINDOW_MS = 2 * 60 * 1000; // 2 minutes (Changed from 2 hours as per user request)
 
 export const getRemainingSearches = (): number => {
   const historyStr = localStorage.getItem(STORAGE_KEY);

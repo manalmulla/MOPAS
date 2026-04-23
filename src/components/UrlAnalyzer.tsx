@@ -83,16 +83,16 @@ export default function UrlAnalyzer() {
           </div>
         )}
 
-        <form onSubmit={handleAnalyze} style={{ display: 'flex', gap: 12 }}>
+        <form onSubmit={handleAnalyze} style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <input
             type="text"
             placeholder="Enter URL to scan (e.g., https://secure-login.com)"
             className="input-field"
             value={url}
             onChange={(e) => { setUrl(e.target.value); setError(null); }}
-            style={{ resize: 'vertical' }}
+            style={{ flex: 1, minWidth: 'min(100%, 300px)' }}
           />
-          <button type="submit" disabled={loading} className="scan-btn">
+          <button type="submit" disabled={loading} className="scan-btn" style={{ width: 'auto', flexGrow: 1 }}>
             {loading ? <div className="spinner" /> : 'ANALYZE'}
           </button>
         </form>
@@ -117,6 +117,8 @@ export default function UrlAnalyzer() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 16
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 42, height: 42, borderRadius: '50%', background: `${verdict.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -136,7 +138,7 @@ export default function UrlAnalyzer() {
             </div>
 
             {/* Scores + Details grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
+            <div className="auto-grid">
 
               {/* Score meters */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -198,9 +200,9 @@ export default function UrlAnalyzer() {
                 {/* Heuristic breakdown */}
                 <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 24 }}>
                   <h3 className="font-display" style={{ fontSize: 14, color: 'var(--text)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Activity size={15} color="var(--warn)" /> Heuristic Feature Analysis
+                    <Activity size={15} color="var(--warn)" /> Heuristic Analysis
                   </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
                     {[
                       { label: 'URL Length',       value: heuristicResult.features.url_length },
                       { label: 'Dots',             value: heuristicResult.features.num_dots },
