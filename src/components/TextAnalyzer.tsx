@@ -60,7 +60,7 @@ export const TextAnalyzer: React.FC = () => {
           </div>
           <div>
             <h2 className="font-display" style={{ fontSize: 24, letterSpacing: -0.5 }}>NLP Text Analyzer</h2>
-            <p style={{ fontSize: 13, color: 'var(--muted)' }}>Detect phishing intent, urgency, and scams in SMS or emails</p>
+            <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'monospace' }}>Detect phishing intent, urgency, and scams in SMS or emails</p>
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export const TextAnalyzer: React.FC = () => {
           </div>
           
           <button type="submit" disabled={loading || !text} className="scan-btn" style={{ width: '100%', height: 54 }}>
-            {loading ? <div className="spinner" /> : <><Search size={18} style={{ marginRight: 8 }} /> RUN NLP ANALYSIS</>}
+            {loading ? <div className="spinner" /> : <>RUN NLP ANALYSIS</>}
           </button>
         </form>
 

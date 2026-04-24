@@ -60,7 +60,7 @@ export default function EmailAnalyzer() {
           </div>
           <div>
             <h2 className="font-display" style={{ fontSize: 24, letterSpacing: -0.5 }}>Forensic Email Analyzer</h2>
-            <p style={{ fontSize: 13, color: 'var(--muted)' }}>Deep header inspection, body intent analysis, and attachment scanning</p>
+            <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'monospace' }}>Deep header inspection, body intent analysis, and attachment scanning</p>
           </div>
         </div>
 
@@ -71,7 +71,7 @@ export default function EmailAnalyzer() {
             </div>
             <div style={{ textAlign: 'center' }}>
               <h3 className="font-display" style={{ fontSize: 18, color: 'var(--text)', marginBottom: 8 }}>UPLOAD .EML FILE</h3>
-              <p style={{ fontSize: 13, color: 'var(--muted)' }}>Drag and drop your forensic email export or click to browse</p>
+              <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'monospace' }}>Drag and drop your forensic email export or click to browse</p>
             </div>
             <input type="file" style={{ display: 'none' }} accept=".eml" onChange={handleFileUpload} />
             {loading && <div className="spinner" style={{ marginTop: 10 }} />}
@@ -81,7 +81,7 @@ export default function EmailAnalyzer() {
             <Info size={18} color="var(--accent)" style={{ marginTop: 2 }} />
             <div>
               <p className="font-display" style={{ fontSize: 13, color: 'var(--text)', marginBottom: 4 }}>Why .eml files?</p>
-              <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6 }}>
+              <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6, fontFamily: 'monospace' }}>
                 .eml files contain full server headers (SPF, DKIM, DMARC) which are essential for verifying the sender's true identity and detecting spoofing attempts.
               </p>
             </div>
